@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "/sdk";
+
+service BabelService {
+    rpc GetSyncStatus(google.protobuf.Empty) returns (SyncStatus);
+}
+
+message SyncStatus {
+    bool isSynced = 1;
+    uint64 currentBlock = 2;
+    uint64 highestBlock = 3;
+}
