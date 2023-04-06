@@ -37,6 +37,11 @@ func TestEthereumEL(t *testing.T) {
 		}
 	})
 
+	cb["net_peerCount"] = `{
+		"jsonrpc": "2.0",
+		"id": 1,
+		"result": "0x2"
+	}`
 	cb["eth_syncing"] = `{
 		"jsonrpc": "2.0",
         "id": 1,
@@ -52,7 +57,7 @@ func TestEthereumEL(t *testing.T) {
 
 	sync, err := el.Query()
 	require.NoError(t, err)
-	require.Equal(t, sync, &babelSDK.SyncStatus{IsSynced: true, CurrentBlock: 1207})
+	require.Equal(t, sync, &babelSDK.SyncStatus{IsSynced: true, CurrentBlock: 1207, NumPeers: 2})
 
 	cb["eth_syncing"] = `{
         "jsonrpc": "2.0",
@@ -68,5 +73,5 @@ func TestEthereumEL(t *testing.T) {
 
 	sync, err = el.Query()
 	require.NoError(t, err)
-	require.Equal(t, sync, &babelSDK.SyncStatus{CurrentBlock: 1344, HighestBlock: 12244007})
+	require.Equal(t, sync, &babelSDK.SyncStatus{CurrentBlock: 1344, HighestBlock: 12244007, NumPeers: 2})
 }
