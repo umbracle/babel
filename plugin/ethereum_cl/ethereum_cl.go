@@ -13,32 +13,54 @@ type EthereumCL struct {
 	URL string `mapstructure:"url"`
 }
 
-func (e *EthereumCL) Query() (*babelSDK.SyncStatus, error) {
-	resp, err := http.Get(e.URL + "/eth/v1/node/syncing")
+type output struct {
+	Data interface{} `json:"data,omitempty"`
+}
+
+func (e *EthereumCL) queryImpl(path string, out interface{}) error {
+	resp, err := http.Get(e.URL + path)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
+		return err
+	}
+
+	respObj := &output{
+		Data: out,
+	}
+	if err := json.Unmarshal(data, &respObj); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *EthereumCL) Query() (*babelSDK.SyncStatus, error) {
+	var syncedResp syncResponse
+	if err := e.queryImpl("/eth/v1/node/syncing", &syncedResp); err != nil {
 		return nil, err
 	}
 
-	var output struct {
-		Data *response `json:"data,omitempty"`
-	}
-	if err := json.Unmarshal(data, &output); err != nil {
+	var numPeers numPeersResponse
+	if err := e.queryImpl("/eth/v1/node/peer_count", &numPeers); err != nil {
 		return nil, err
 	}
 
 	syncStatus := &babelSDK.SyncStatus{
-		IsSynced:     !output.Data.IsSyncing,
-		CurrentBlock: uint64(output.Data.HeadSlot),
-		HighestBlock: uint64(output.Data.HeadSlot + output.Data.SyncDistance),
+		IsSynced:     !syncedResp.IsSyncing,
+		CurrentBlock: uint64(syncedResp.HeadSlot),
+		HighestBlock: uint64(syncedResp.HeadSlot + syncedResp.SyncDistance),
+		NumPeers:     uint64(numPeers.Connected),
 	}
 	return syncStatus, nil
 }
 
-type response struct {
+type numPeersResponse struct {
+	Connected argStrUint64 `json:"connected"`
+}
+
+type syncResponse struct {
 	HeadSlot     argStrUint64 `json:"head_slot"`
 	SyncDistance argStrUint64 `json:"sync_distance"`
 	IsSyncing    bool         `json:"is_syncing"`

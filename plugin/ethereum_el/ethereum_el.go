@@ -49,6 +49,12 @@ func (e *EthereumEL) doRequest(method string, obj interface{}) error {
 }
 
 func (e *EthereumEL) Query() (*babelSDK.SyncStatus, error) {
+	// query the number of peers
+	var numPeers argHexUint64
+	if err := e.doRequest("net_peerCount", &numPeers); err != nil {
+		return nil, err
+	}
+
 	syncRes := json.RawMessage{}
 	if err := e.doRequest("eth_syncing", &syncRes); err != nil {
 		return nil, err
@@ -63,6 +69,7 @@ func (e *EthereumEL) Query() (*babelSDK.SyncStatus, error) {
 		syncStatus := &babelSDK.SyncStatus{
 			IsSynced:     true,
 			CurrentBlock: uint64(latestBlock),
+			NumPeers:     uint64(numPeers),
 		}
 		return syncStatus, nil
 	}
@@ -76,6 +83,7 @@ func (e *EthereumEL) Query() (*babelSDK.SyncStatus, error) {
 	syncStatus := &babelSDK.SyncStatus{
 		CurrentBlock: uint64(synced.CurrentBlock),
 		HighestBlock: uint64(synced.HighestBlock),
+		NumPeers:     uint64(numPeers),
 	}
 	return syncStatus, nil
 }

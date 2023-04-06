@@ -14,4 +14,5 @@ message SyncStatus {
     bool isSynced = 1;
     uint64 currentBlock = 2;
     uint64 highestBlock = 3;
+    uint64 numPeers = 4;
 }

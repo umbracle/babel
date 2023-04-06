@@ -23,10 +23,20 @@ func TestEthereumCL(t *testing.T) {
 			}
 		}`))
 	})
+	srv.Mux().HandleFunc("/eth/v1/node/peer_count", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{
+			"data": {
+			  	"disconnected": "12",
+			  	"connecting": "34",
+			  	"connected": "56",
+			 	"disconnecting": "5"
+			}
+		}`))
+	})
 
 	cl := &EthereumCL{URL: srv.Http()}
 
 	sync, err := cl.Query()
 	require.NoError(t, err)
-	require.Equal(t, sync, &babelSDK.SyncStatus{IsSynced: false, CurrentBlock: 1, HighestBlock: 2})
+	require.Equal(t, sync, &babelSDK.SyncStatus{IsSynced: false, CurrentBlock: 1, HighestBlock: 2, NumPeers: 56})
 }
