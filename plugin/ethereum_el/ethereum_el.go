@@ -18,8 +18,9 @@ type EthereumEL struct {
 
 func (e *EthereumEL) doRequest(method string, obj interface{}) error {
 	jsonRPCSyncReq := &jsonRPCRequest{
-		ID:     1,
-		Method: method,
+		JsonRPC: "2.0",
+		ID:      1,
+		Method:  method,
 	}
 	postData, err := json.Marshal(jsonRPCSyncReq)
 	if err != nil {
@@ -43,7 +44,7 @@ func (e *EthereumEL) doRequest(method string, obj interface{}) error {
 	}
 
 	if respObj.Error != nil {
-		return fmt.Errorf("jsonrpc request failed: %v", respObj.Error.Data)
+		return fmt.Errorf("jsonrpc request failed: %v", respObj.Error.Message)
 	}
 	return nil
 }
@@ -52,19 +53,19 @@ func (e *EthereumEL) Query() (*babelSDK.SyncStatus, error) {
 	// query the number of peers
 	var numPeers argHexUint64
 	if err := e.doRequest("net_peerCount", &numPeers); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to 'net_peerCount' request: %v", err)
 	}
 
 	syncRes := json.RawMessage{}
 	if err := e.doRequest("eth_syncing", &syncRes); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to 'eth_syncing' request: %v", err)
 	}
 
 	if string(syncRes) == "false" {
 		// query to get current block number
 		var latestBlock argHexUint64
 		if err := e.doRequest("eth_blockNumber", &latestBlock); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to 'eth_blockNumber' request: %v", err)
 		}
 		syncStatus := &babelSDK.SyncStatus{
 			IsSynced:     true,
@@ -97,9 +98,10 @@ type syncedResponse struct {
 }
 
 type jsonRPCRequest struct {
-	ID     uint64          `json:"id"`
-	Method string          `json:"method"`
-	Params json.RawMessage `json:"params"`
+	JsonRPC string          `json:"jsonrpc"`
+	ID      uint64          `json:"id"`
+	Method  string          `json:"method"`
+	Params  json.RawMessage `json:"params"`
 }
 
 type jsonRPCResponse struct {
@@ -109,9 +111,8 @@ type jsonRPCResponse struct {
 }
 
 type jsonRPCError struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 // argHexUint64 is a uint represented as an hexadecimal value
