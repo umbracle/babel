@@ -62,13 +62,13 @@ func main() {
 			log.Printf(resp.String())
 		}
 	} else if cmd == "server" {
-		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+		lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 			os.Exit(1)
 		}
 
-		log.Printf("Grpc server running in localhost:%d\n", port)
+		log.Printf("Grpc server running in 0.0.0.0:%d\n", port)
 
 		srv := &service{
 			plugin: plugin,
