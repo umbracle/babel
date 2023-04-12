@@ -31,6 +31,11 @@ func TestEthereumEL(t *testing.T) {
 		if err := json.Unmarshal(data, &req); err != nil {
 			return
 		}
+		if req.JsonRPC != "2.0" {
+			w.Write([]byte(`invalid request`))
+			return
+		}
+
 		resp, ok := cb[req.Method]
 		if ok {
 			w.Write([]byte(resp))
