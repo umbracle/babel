@@ -7,7 +7,7 @@ Babel is a standard interface to query the sync status of a blockchain node.
 Run as a `Grpc` server:
 
 ```
-$ go run cmd/main.go --plugin ethereum_el server url=http://localhost:8545
+$ go run cmd/main.go --plugin ethereum_el server [url=http://localhost:8545]
 ```
 
 ## Supported nodes

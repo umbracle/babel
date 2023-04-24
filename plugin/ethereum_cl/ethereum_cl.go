@@ -9,6 +9,8 @@ import (
 	babelSDK "github.com/umbracle/babel/sdk"
 )
 
+var defaultURL = "http://0.0.0.0:5052"
+
 type EthereumCL struct {
 	URL string `mapstructure:"url"`
 }
@@ -37,6 +39,10 @@ func (e *EthereumCL) queryImpl(path string, out interface{}) error {
 }
 
 func (e *EthereumCL) Query() (*babelSDK.SyncStatus, error) {
+	if e.URL == "" {
+		e.URL = defaultURL
+	}
+
 	var syncedResp syncResponse
 	if err := e.queryImpl("/eth/v1/node/syncing", &syncedResp); err != nil {
 		return nil, err

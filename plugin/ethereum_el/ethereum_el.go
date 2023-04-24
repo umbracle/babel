@@ -12,6 +12,8 @@ import (
 	babelSDK "github.com/umbracle/babel/sdk"
 )
 
+var defaultURL = "http://localhost:8545"
+
 type EthereumEL struct {
 	URL string `mapstructure:"url"`
 }
@@ -50,6 +52,10 @@ func (e *EthereumEL) doRequest(method string, obj interface{}) error {
 }
 
 func (e *EthereumEL) Query() (*babelSDK.SyncStatus, error) {
+	if e.URL == "" {
+		e.URL = defaultURL
+	}
+
 	// query the number of peers
 	var numPeers argHexUint64
 	if err := e.doRequest("net_peerCount", &numPeers); err != nil {
